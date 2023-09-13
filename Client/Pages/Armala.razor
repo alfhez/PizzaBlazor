@@ -8,8 +8,8 @@
     <div class="col-6">
         @if (tamanos != null)
         {
-            <select class="form-select" aria-label="Default select example" onchange="TamanoFunc()">
-                <option selected>Seleccione el tamaño</option>
+            <select class="form-select" aria-label="Default select example" @onchange="TamanoFunc">
+                <option selected disabled>Seleccione el tamaño</option>
                 @foreach (var item in tamanos)
                 {
                     <option value="@item.Id">@item.Tamano</option>
@@ -19,11 +19,10 @@
 
         }
 
-        @if (tamanoSeleccionado.Id > 0)
-        {
-            @if (tipoMasas != null)
+        
+        @if (tipoMasas != null)
             {
-                <select class="form-select" aria-label="Default select example" onchange="TipoFunc()">
+                <select class="form-select" aria-label="Default select example" @onchange="TipoFunc">
                     <option selected disabled>Seleccione el tipo de masa</option>
                     @foreach (var item in tipoMasas)
                     {
@@ -33,37 +32,63 @@
                 </select>
 
             }
-        }
-
+        
+        <br />
         @if( tipoMasaSeleccionada.Id > 0)
         {
-            @if (ingredientes != null)
+            
+            @foreach (var item in ingredientes)
             {
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" value="" id="flexCheckIndeterminate">
-                    <label class="form-check-label" for="flexCheckIndeterminate">
-
-                    @foreach (var item in ingredientes)
-                    {
-                        @item.Nombre
-                    }
-                    </label>
-
+                <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" @onchange="eventArgs => {IngSel(item, eventArgs);}">
+                        <label class="form-check-label" for="flexCheckDefault">
+                            @item.Nombre
+                        </label>
                 </div>
-
             }
+            
         }
         
+        <br />
+        <center>
+            <img src="imagenes/steve.png" alt="PizzaSteve" height="200" />
+        </center>
 
 
     </div>
     
     <div class="col-6">
-        @tamanoSeleccionado.Tamano
-        @tamanoSeleccionado.Precio
+        <center>
+            <img src="imagenes/squeezee.png" height="300" />
+        </center>
+        <ul class="list-group">
+            <li class="list-group-item">
+                Costo de la pizza
+            </li>
+            <li class="list-group-item">
+                @tamanoSeleccionado.Tamano
+                @tamanoSeleccionado.Precio
+            </li>
+            <li class="list-group-item">
+                @tipoMasaSeleccionada.Tipo
+                @tipoMasaSeleccionada.Precio
+            </li>
+            <li class="list-group-item">
+                Ingredientes
+                @IngredienteTotal
+            </li>
+        </ul>
+
         <br />
-        @tipoMasaSeleccionada.Tipo
-        @tipoMasaSeleccionada.Precio
+        <ul>
+            <li class="list-group-item">
+                Total
+                @Total
+            </li>
+        </ul>
+        
+        
+
     </div>
 
 </div>
@@ -78,18 +103,23 @@
     List<TipoMasa> tipoMasas = new List<TipoMasa>();
     List<Ingrediente> ingredientes = new List<Ingrediente>();
 
-    Tamanos tamanoSeleccionado = new Tamanos();
-    TipoMasa tipoMasaSeleccionada = new TipoMasa();
+    Tamanos tamanoSeleccionado = new Tamanos { Id = 0, Tamano = "Seleccione un Tamaño", Precio = 0.0f };
+    TipoMasa tipoMasaSeleccionada = new TipoMasa { Id = 0, Tipo = "Seleccione el tipo de masa", Precio = 0.0f };
     Ingrediente ingrediente = new Ingrediente();
+
+    List<Ingrediente> ingredientesSeleccionados = new List<Ingrediente>();
+
+    float Total = 0.0f;
+    float IngredienteTotal = 0.0f;
 
     protected override async Task OnInitializedAsync()
     {
         tamanos = new List<Tamanos>
         {
-            new Tamanos { Id = 1, Tamano = "Personal", Precio = 10.0f},
-            new Tamanos { Id = 2, Tamano = "Chica", Precio = 20.0f},
-            new Tamanos { Id = 3, Tamano = "Mediana", Precio = 30.0f},
-            new Tamanos { Id = 4, Tamano = "Grande", Precio = 40.0f}
+            new Tamanos { Id = 1, Tamano = "Personal", Precio = 20.0f},
+            new Tamanos { Id = 2, Tamano = "Chica", Precio = 35.0f},
+            new Tamanos { Id = 3, Tamano = "Mediana", Precio = 60.0f},
+            new Tamanos { Id = 4, Tamano = "Grande", Precio = 90.0f}
         };
 
         tipoMasas = new List<TipoMasa>
@@ -102,9 +132,9 @@
 
         ingredientes = new List<Ingrediente>
         {
-            new Ingrediente { Id = 1, Nombre = "Peperoni", Precio = 15.0f},
-            new Ingrediente { Id = 2, Nombre = "Jamon", Precio = 10.0f},
-            new Ingrediente { Id = 3, Nombre = "Salchicha", Precio = 10.0f},
+            new Ingrediente { Id = 1, Nombre = "Peperoni", Precio = 17.0f},
+            new Ingrediente { Id = 2, Nombre = "Jamon", Precio = 15.0f},
+            new Ingrediente { Id = 3, Nombre = "Salchicha", Precio = 15.0f},
             new Ingrediente { Id = 4, Nombre = "Champiñones", Precio = 10.0f},
             new Ingrediente { Id = 5, Nombre = "Piña", Precio = 10.0f},
         };
@@ -120,6 +150,9 @@
         string id = prueba.Value.ToString();
         int idint = int.Parse(id);
         tamanoSeleccionado = tamanos.Where(tamanos => tamanos.Id == idint).FirstOrDefault();
+        //Total = tamanoSeleccionado.Precio;
+        Total = tamanoSeleccionado.Precio + tipoMasaSeleccionada.Precio + IngredienteTotal;
+        
     }
 
     private void TipoFunc(ChangeEventArgs args)
@@ -129,7 +162,30 @@
         int idint = int.Parse(id);
 
         tipoMasaSeleccionada = tipoMasas.Where(tipoMasas => tipoMasas.Id == idint).FirstOrDefault();
+
+        //Total += tipoMasaSeleccionada.Precio;
+        Total = tamanoSeleccionado.Precio + tipoMasaSeleccionada.Precio + IngredienteTotal;
     }
-    
+
+    private void IngSel(Ingrediente ingrediente, ChangeEventArgs args)
+    {
+        bool prueba = bool.Parse(args.Value.ToString());
+        var ingredienteSel = ingrediente;
+        if(prueba)
+        {
+            ingredientesSeleccionados.Add(ingredienteSel);
+            IngredienteTotal += ingredienteSel.Precio;
+            //Total += ingredienteSel.Precio;
+        }
+        else
+        {
+            ingredientesSeleccionados.Remove(ingredienteSel);
+            IngredienteTotal -= ingredienteSel.Precio;
+            //Total -= ingredienteSel.Precio;
+        }
+
+        Total = tamanoSeleccionado.Precio + tipoMasaSeleccionada.Precio + IngredienteTotal;
+    }
+
 
 }
